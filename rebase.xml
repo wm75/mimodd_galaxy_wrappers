@@ -1,0 +1,63 @@
+<tool id="mimodd_rebase" name="MiModD Rebase Sites" 
+version="@MIMODD_WRAPPER_VERSION@">
+    <description>from a VCF file</description>
+    <macros>
+        <import>macros.xml</import>
+    </macros>
+    <expand macro="requirements" />
+    <expand macro="stdio" />
+    <expand macro="version_command" />
+    <command><![CDATA[
+	mimodd rebase '$ifile'
+	  '$chainfile'
+	  '$fastafile'
+	  $reverse_query
+	  --ofile '$output_vcf'
+    ]]></command>
+
+    <inputs>
+        <param name="ifile" type="data" format="vcf" label="VCF input file"
+        help=""/>
+        <param name="chainfile" type="data" format="tab" label="Input chainfile"
+        help=""/>
+        <param name="fastafile" type="data" format="fasta" label="Input reference genome file"
+        help="The genome assembly file in which you would like the new gene coordinates "/>
+        <param name="reverse_query" type="boolean" truevalue="-r" falsevalue="" checked="false"
+        label="reverse the target and query sites of the initial chainfile"
+        help="If selected, the chainfile will be used in a reverse order " />
+    </inputs>
+    <outputs>
+        <data name="output_vcf" format="vcf"
+        label="Variants rebased with MiModd from ${on_string}"/>
+    </outputs>
+
+    <tests>
+        <test>
+            <param name="ifile" value="a.vcf" />
+            <param name="chainfile" value="ce11ToCe10.over.chain" />
+            <param name="fastafile" value="a.fa" />
+            <assert_command>
+                <not_has_text text=" -r" />
+            </assert_command>
+            <output name="output_vcf" file="rebased.vcf" ftype="vcf"
+            lines_diff="6" />
+        </test>
+    </tests>
+    
+    <help><![CDATA[
+.. class:: infomark
+
+   **What it does**
+   
+The tool takes as input a VCF file like the ones produced by the **Extract Variant** tool, a Genome Browser chain format, and the genome reference in fasta format in which you would like to obtain your genes. It converts a genome position from one genome assembly to another genome assembly.
+
+   **Options:**
+   
+The **reverse** switch allows you to use the chainfile in a reverse order. Meaning that, if you have coordinates in a version 2 form and a chainfile 'v1Tov2.chain', you could find the coordinates in v1.
+The reverse switch can be used when one intends to find new gene coordinates the other way around than the chainfile provided was meant to.
+
+
+@HELP_FOOTER@
+    ]]></help>
+    <expand macro="citations" />
+</tool>

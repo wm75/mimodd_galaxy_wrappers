@@ -1,0 +1,102 @@
+<tool id="mimodd_annotate" name="MiModD Variant Annotation" 
+version="@MIMODD_WRAPPER_VERSION@">
+    <description>
+    with functional effects on genes and transcripts
+    </description>
+    <macros>
+        <import>macros.xml</import>
+    </macros>
+    <expand macro="requirements" />
+    <expand macro="stdio" />
+    <expand macro="version_command" />
+    <command><![CDATA[
+  	mimodd annotate
+	  '$inputfile' '$annotation_source'
+	  #if $snpeff_settings.stats:
+	    --stats '$summary_file'
+	  #end if
+	  #if $snpeff_settings.ud:
+	    --ud ${snpeff_settings.ud}
+	  #end if
+	  #if $snpeff_settings.filter:
+	    #echo ' '.join(str($snpeff_settings.filter).split(','))
+	  #end if
+	  --ofile '$ofile'
+	  --verbose
+    ]]></command>
+
+    <inputs>
+        <param name="inputfile" type="data" format="vcf"
+        label="VCF input file to be annotated" />
+        <param name="genome_list" type="data" format="tabular"
+        label="List of available SnpEff genome annotation files"
+        help="Select a dataset generated with the MiModD List Installed SnpEff Genomes tool to be able to choose from the annotation files listed in it." />
+        <param name="annotation_source" type="select"
+        label="Genome annotation file to use"
+        help="Select a genome annotation file for your organism from the ones in the list.">
+            <options from_dataset="genome_list">
+                <column name="name" index="0"/>
+                <column name="value" index="1"/>
+            </options>
+        </param>
+    	<section name="snpeff_settings" title="More SnpEff options" expanded="False">
+            <param name="stats" type="boolean" checked="false"
+            label="Have SnpEff produce a summary file of results" />
+            <param name="ud" type="integer" optional="true" 
+            label="upstream downstream interval length (default = 5000 bases)"
+            help="specify the upstream/downstream interval length. Variants more than INTERVAL nts from the next annotated gene will be considered intergenic"/>
+            <param name="filter" type="select" display="checkboxes" multiple="true"
+            label="Disable select types of annotations"
+            help="The corresponding variants will still be retained (without annotations) in the output">
+                <option value="--no-downstream">Do not annotate DOWNSTREAM changes</option>
+                <option value="--no-upstream">Do not annotate UPSTREAM changes</option>
+                <option value="--no-intergenic">Do not annotate INTERGENIC changes</option>
+                <option value="--no-intron">Do not annotate INTRON changes</option>
+                <option value="--no-utr">Do not annotate 5_PRIME_UTR or 3_PRIME_UTR changes</option>
+            </param>
+        </section>
+    </inputs>
+
+    <outputs>
+        <data name="ofile" format="vcf"
+        label="Variants annotated with MiModd from ${on_string}" />
+        <data name="summary_file" format="html"
+        label="Summary of MiModD variant annotation of ${on_string}">
+            <filter>snpeff_settings['stats']</filter>
+        </data>
+    </outputs>
+
+    <help><![CDATA[
+.. class:: warningmark
+
+This tool requires the variant annotation software SnpEff, which is not part of
+the MiModD package! It also needs the correct SnpEff genome file for your
+organism and reference sequence version installed with SnpEff.
+
+.. class:: infomark
+
+   **What it does**
+
+This tool uses SnpEff to annotate the variants in the VCF input dataset with
+the effects that these variants have on known genomic features, i.e. on genes
+and transcripts.
+
+To do its job, SnpEff requires a file of known genome annotations for your
+organism of interest. You should use the MiModD *List Installed SnpEff Genomes*
+tool to generate a new dataset in your history that lists all SnpEff annotation
+files currently available to SnpEff on the system, then when you select this
+dataset as the *List of available SnpEff genome annotation files* above, you
+will be able to choose a *Genome Annotation File* from the dropdown list.
+
+The tool will create a new dataset in VCF format with the annotations added to
+the corresponding variant records. Do not expect this format to be very
+readable, but use the *MiModD Variant Reports* tool to turn it into a human
+friendly form.
+
+In addition, you can instruct the tool to produce an additional dataset with a
+summary of the variants and their effects in html format.
+
+@HELP_FOOTER@
+    ]]></help>
+    <expand macro="citations" />
+</tool>
