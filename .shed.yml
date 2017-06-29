@@ -1,0 +1,65 @@
+owner: "wolma"
+remote_repository_url: "https://github.com/wm75/mimodd_galaxy_wrappers"
+homepage_url: "mimodd.readthedocs.io"
+categories:
+  - Variant Analysis
+  - SAM
+  - Next Gen Mappers
+  - Convert Formats
+  - Visualization  
+repositories:
+  mimodd_aln:
+    description: The MiModD Read Alignment tool
+    long_description: |
+      This tool provides access to the SNAP read aligner integrated into MiModD.
+    include:
+      - snap_caller.xml
+      - macros.xml
+      - test-data
+  mimodd_snpeff:
+    description: SnpEff-dependent functionality of MiModD
+    long_description: |
+      These tools require SnpEff installed and MiModD configured to use it.
+      They enable the annotation of variants identified with the MiModD core
+      tools with functional effects.
+    include:
+      - annotate_variants.xml
+      - snpeff_genomes.xml
+      - macros.xml
+  mimodd_core:
+    description: The core tools of the MiModD suite of tools.
+    long_description: These tools provide the core mapping-by-sequencing
+      functionality of MiModD. Note that sequence reads have to be aligned to
+      the corresponding reference genome before they can be analyzed. This can
+      be done with any modern aligner of your choice or through the MiModD Read
+      Alignment tool available from the separate repository mimodd_aln.
+      Functional annotation of identified variants can be performed using
+      SnpEff. MiModD-specific wrappers for SnpEff are available from the
+      separate repository mimodd_snpeff though more general wrappers should be
+      compatible, too.
+    include:
+      - fileinfo.xml
+      - sam_header.xml
+      - convert.xml
+      - reheader.xml
+      - bamsort.xml
+      - snp_caller_caller.xml
+      - varextract.xml
+      - deletion_predictor.xml
+      - covstats.xml
+      - vcf_filter.xml
+      - rebase.xml
+      - varreport.xml
+      - cloudmap.xml
+      - macros.xml
+      - test-data
+suite:
+  name: "suite_mimodd"
+  description: MiModD - A tool suite to identify mutations from whole-genome sequencing data
+  long_description: |
+    MiModD is an integrated solution for mapping-by-sequencing analysis of
+    whole-genome sequencing (WGS) data from laboratory model organisms. It
+    enables geneticists to identify the genetic variants underlying an observed
+    phenotype in a mutant organism starting from WGS read data. This suite
+    installs the full set of MiModD tools.
+  type: repository_suite_definition
