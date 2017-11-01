@@ -2,21 +2,62 @@
     <description>maps sequence reads to a reference genome using SNAP</description>
     <macros>
         <import>macros.xml</import>
+        <macro name="require_metadata">
+            <param name="header" type="data" format="sam" 
+            label="metadata source for this sample" />
+        </macro>
+        <macro name="sam_bam_selector" token_format="sam">
+            <param name="ifile" type="data" format="@FORMAT@"
+            label="input file"/>
+            <param name="header" type="data" format="sam" optional="true"  
+            label="(optional) metadata source for this sample"
+            help="a SAM format dataset providing information about the sequences in the input data in its header; do NOT provide this dataset if the information is already part of your input dataset unless you want to have the original metadata overwritten. If needed, a metadata source dataset can be generated with the MiModD Run Annotation tool." />
+        </macro>
     </macros>
     <expand macro="requirements" />
     <expand macro="stdio" />
     <expand macro="version_command" />
     <command><![CDATA[
+    ## Currently Galaxy does not autoconvert collections of fastq.gz files.
+    ## This tool wrapper fixes that by allowing fastq and fastq.gz as input
+    ## collection formats.
+    ## gz_input is then used as flag to indicate a fastq.gz input file
+    #set gz_input = False
+
 	mimodd snap-batch -s
+	  #if str($reference.source) == "cached":
+        #set ref_genome = $reference.genome.fields.path
+      #else:
+        #set ref_genome = $reference.genome
+      #end if
 	  #for $i in $datasets
 		"snap ${i.mode_choose.mode} '$ref_genome'
-		#if $str($i.mode_choose.mode) == "paired" and $str($i.mode_choose.input.iformat) in ("fastq", "gz"):
-          '${i.mode_choose.input.ifile1}' '${i.mode_choose.input.ifile2}'
+		#if $str($i.mode_choose.mode) == "paired" and $str($i.mode_choose.input.iformat) == "fastq":
+		  #if $str($i.mode_choose.input.pe_source.type) == 'collection':
+            ## PE input provided as a paired collection - if the forward
+            ## dataset is gzipped we assume the reverse dataset is too.
+		    '${i.mode_choose.input.pe_source.input_data.forward}'
+		    '${i.mode_choose.input.pe_source.input_data.reverse}'
+		    #if $i.mode_choose.input.pe_source.input_data.forward.is_of_type('fastq.gz'):
+		      #set gz_input = True
+		    #end if
+		  #else
+		    ## PE input provided as separate fastq datasets
+            '${i.mode_choose.input.pe_source.ifile1}'
+            '${i.mode_choose.input.pe_source.ifile2}'
+          #end if
 		#else:
+		  ## Input is either SE data or not in fastq format =>
+		  ## only one input dataset
           '${i.mode_choose.input.ifile}'
 		#end if
-        --ofile '$ofile' --iformat ${i.mode_choose.input.iformat}
-        --oformat ${output_options.oformat}
+		#if $gz_input:
+		  ## a gzipped fastq input dataset was encountered
+		  --iformat gz
+		#else
+		  --iformat ${i.mode_choose.input.iformat}
+		#end if
+        --ofile '$ofile' --oformat ${output_options.oformat}
         ${output_options.sort} ${output_options.explicit_mmatch_notation}
         --idx-seedsize $indexing.seedsize
         --idx-slack $indexing.slack
@@ -54,8 +95,25 @@
     ]]></command>
 
     <inputs>
-        <param name="ref_genome" type="data" format="fasta" label="reference genome" 
-        help="The fasta reference genome that SNAP should align reads against."/>
+        <conditional name="reference">
+            <param name="source" type="select"
+            label="Will you select a reference genome from your history or use a built-in genome?">
+                <option value="cached">Use a built-in genome</option>
+                <option value="history">Use a genome from my history</option>
+            </param>
+            <when value="cached">
+                <param name="genome" type="select"
+                label="reference genome"
+                help="The fasta reference genome that SNAP should align reads against.">
+                    <options from_data_table="all_fasta" />
+                </param>
+            </when>
+            <when value="history">
+                <param name="genome" type="data" format="fasta"
+                label="reference genome"
+                help="The fasta reference genome that SNAP should align reads against."/>
+            </when>
+        </conditional>
         <section name="indexing" title="Parameters affecting reference genome indexing" expanded="false">
             <param name="seedsize" type="integer" value="20" 
     	    label="seed size (default: 20)" 
@@ -68,7 +126,7 @@
 	        help="Factor (between 1 and 1000) that controls the size of the index build overflow space. For certain genomes you may have to increase this value if you are getting a corresponding error from the tool." />
         </section>
         <section name="alignment" title="Alignment parameters" expanded="false"
-        help="The global alignment parameters in this section will be used for samples for which you do not provide sample-sepcific settings.">
+        help="The global alignment parameters in this section will be used for samples for which you do not provide their own sample-specific settings.">
             <section name="single" title="Parameters applied to single-end samples"
             help="These parameters will affect the alignments for any single-end sample
             for which you do not provide sample-specific settings.">
@@ -80,7 +138,7 @@
                 help="Confidence threshold (SNAP option -c); the minimum edit distance difference between two alternate alignments required to reject the poorer alignment as suboptimal; higher values increase the rate of ambiguously aligned reads."/>
                 <param name="confadpt" type="integer" value="7" 
                 label="adaptive confdiff behaviour (default: 7)" 
-                help="Specifies how many seeds of a read may be ignored (based on the maximum hits value above) before the confidence threshold above gets increased by one for that read; helps fine-tuning alignment accuracy in repetitive regions of the genome."/>  
+                help="Specifies how many seeds of a read may be ignored (based on the maximum hits value above) before the confidence threshold above gets increased by one for that read (SNAP option -a); helps fine-tuning alignment accuracy in repetitive regions of the genome."/>  
 	            <param name="maxseeds" type="integer" value="25" 
 	            label="maximum seeds per read (default: 25)" 
 	            help="Number of seeds to use per read (SNAP option -n) when trying to match it to the reference genome; higher numbers will increase the rate of aligned reads and reduce the rate of misalignments, but will reduce performance."/>
@@ -116,7 +174,7 @@
                 help="Confidence threshold (SNAP option -c); the minimum edit distance difference between two alternate alignments required to reject the poorer alignment as suboptimal; higher values increase the rate of ambiguously aligned reads."/>
                 <param name="confadpt" type="integer" value="7" 
                 label="adaptive confdiff behaviour (default: 7)" 
-                help="Specifies how many seeds of a read may be ignored (based on the maximum hits value above) before the confidence threshold above gets increased by one for that read; helps fine-tuning alignment accuracy in repetitive regions of the genome."/>  
+                help="Specifies how many seeds of a read may be ignored (based on the maximum hits value above) before the confidence threshold above gets increased by one for that read (SNAP option -a); helps fine-tuning alignment accuracy in repetitive regions of the genome."/>  
 	            <param name="maxseeds" type="integer" value="25" 
 	            label="maximum seeds per read (default: 25)" 
 	            help="Number of seeds to use per read (SNAP option -n) when trying to match it to the reference genome; higher numbers will increase the rate of aligned reads and reduce the rate of misalignments, but will reduce performance."/>
@@ -138,7 +196,7 @@
             label="Output options"
             help="No matter how many input datasets you specify below and what there formats are, this tool will produce a single output file with the aligned reads from all samples. In this section you can configure some aspects of what the output should look like. Unless you have a really special usecase, you can (and probably should) just go with the default settings though.">
                 <option value="default">Just go with the defaults</option>
-                <option value="custom">Show individual output options</option>
+                <option value="custom">Show detailed output options</option>
             </param>
             <when value="default">
                 <param name="oformat" type="hidden" value="bam" />
@@ -184,32 +242,18 @@
                         <param name="iformat" type="select" label="input file format">
                             <option value="bam">BAM</option>
                             <option value="sam">SAM</option>
-                            <option value="gz">gz</option>
 		                    <option value="fastq">fastq</option>
 	                    </param>
 	                    <when value="bam">
-		                    <param name="ifile" type="data" format="bam" 
-		                    label="input file"/>
-                            <param name="header" type="data" format="sam" optional="true"  
-                            label="custom header file" />
+		                    <expand macro="sam_bam_selector" format="bam" />
 	                    </when>
 	                    <when value="sam">
-		                    <param name="ifile" type="data" format="sam" 
-		                    label="input file"/>
-                            <param name="header" type="data" format="sam" optional="true"  
-                            label="custom header file" />
+		                    <expand macro="sam_bam_selector" format="sam" />
 	                    </when>            
-	                    <when value="gz">
-		                    <param name="ifile" type="data" format="data" 
-		                    label="input file"/>
-		                    <param name="header" type="data" format="sam" 
-		                    label="header file" />
-		                </when>
 	                    <when value="fastq">
 		                    <param name="ifile" type="data" format="fastq" 
 		                    label="input file"/>
-		                    <param name="header" type="data" format="sam" 
-		                    label="header file" />
+		                    <expand macro="require_metadata" />
 		                </when>
                     </conditional>
                     <section name="aln_options" title="Alignment options for this sample" expanded="false"
@@ -222,7 +266,7 @@
 	                    help="Confidence threshold (SNAP option -c); the minimum edit distance difference between two alternate alignments required to reject the poorer alignment as suboptimal; higher values increase the rate of ambiguously aligned reads."/>
 	                    <param name="confadpt" type="integer" optional="true" value=""
 	                    label="adaptive confdiff behaviour"
-	                    help="Specifies how many seeds of a read may be ignored (based on the maximum hits value above) before the confidence threshold above gets increased by one for that read; helps fine-tuning alignment accuracy in repetitive regions of the genome."/>  
+	                    help="Specifies how many seeds of a read may be ignored (based on the maximum hits value above) before the confidence threshold above gets increased by one for that read (SNAP option -a); helps fine-tuning alignment accuracy in repetitive regions of the genome."/>  
             	        <param name="maxseeds" type="integer" optional="true" value=""
             	        label="maximum seeds per read"
             	        help="Number of seeds to use per read (SNAP option -n) when trying to match it to the reference genome; higher numbers will increase the rate of aligned reads and reduce the rate of misalignments, but will reduce performance."/>
@@ -245,36 +289,34 @@
                         <param name="iformat" type="select" label="input file format">
                             <option value="bam">BAM</option>
                             <option value="sam">SAM</option>
-		                    <option value="gz">gz</option>
                             <option value="fastq">fastq</option>
 	                    </param>
                         <when value="bam">
-		                    <param name="ifile" type="data" format="bam" 
-		                    label="input file"/>
-                            <param name="header" type="data" format="sam" optional="true" 
-                            label="custom header file" />
+		                    <expand macro="sam_bam_selector" format="bam" />
 		                </when>
                         <when value="sam">
-		                    <param name="ifile" type="data" format="sam" 
-		                    label="input file"/>
-		                    <param name="header" type="data" format="sam" optional="true" 
-		                    label="custom header file" />
+		                    <expand macro="sam_bam_selector" format="sam" />
                         </when>
  	                    <when value="fastq">
-		                    <param name="ifile1" type="data" format="fastq" 
-		                    label="inputfile with the first set of reads of paired-end data"/>
-	                        <param name="ifile2" type="data" format="fastq" 
-	                        label="inputfile with the second set of reads of paired-end data"/>
-		                    <param name="header" type="data" format="sam" 
-		                    label="header file" help="required" />
-		                </when>
-	                    <when value="gz">
-		                    <param name="ifile1" type="data" format="data"
-		                    label="inputfile with the first set of reads of paired-end data"/>
-	                        <param name="ifile2" type="data" format="data"
-	                        label="inputfile with the second set of reads of paired-end data"/>
-		                    <param name="header" type="data" format="sam" 
-		                    label="header file" help="required" />
+ 	                        <conditional name="pe_source">
+ 	                            <param name="type" type="select"
+ 	                            label="the paired-end fastq input is provided as">
+                                    <option value="individual">Individual datasets</option>
+                                    <option value="collection">a Paired collection</option>
+                                </param>
+                                <when value="individual">
+		                            <param name="ifile1" type="data" format="fastq" 
+		                            label="inputfile with the first set of reads of paired-end data"/>
+	                                <param name="ifile2" type="data" format="fastq" 
+	                                label="inputfile with the second set of reads of paired-end data"/>
+	                            </when>
+                                <when value="collection">
+		                            <param name="input_data" type="data_collection"
+		                            collection_type="paired" format="fastq, fastq.gz" 
+		                            label="paired input dataset collection"/>
+	                            </when>
+                            </conditional>	                            
+                            <expand macro="require_metadata" />
 		                </when>
                     </conditional>
                     <section name="aln_options" title="Alignment options for this sample" expanded="false"
@@ -296,7 +338,7 @@
 	                    help="Confidence threshold (SNAP option -c); the minimum edit distance difference between two alternate alignments required to reject the poorer alignment as suboptimal; higher values increase the rate of ambiguously aligned reads."/>
 	                    <param name="confadpt" type="integer" optional="true" value=""
 	                    label="adaptive confdiff behaviour"
-	                    help="Specifies how many seeds of a read may be ignored (based on the maximum hits value above) before the confidence threshold above gets increased by one for that read; helps fine-tuning alignment accuracy in repetitive regions of the genome."/>  
+	                    help="Specifies how many seeds of a read may be ignored (based on the maximum hits value above) before the confidence threshold above gets increased by one for that read (SNAP option -a); helps fine-tuning alignment accuracy in repetitive regions of the genome."/>  
             	        <param name="maxseeds" type="integer" optional="true" value=""
             	        label="maximum seeds per read" 
             	        help="Number of seeds to use per read (SNAP option -n) when trying to match it to the reference genome; higher numbers will increase the rate of aligned reads and reduce the rate of misalignments, but will reduce performance."/>
@@ -324,18 +366,32 @@
             <change_format>
 	            <when input="output_options.oformat" value="sam" format="sam"/>
 	        </change_format>
+            <actions>
+                <conditional name="reference.source">
+                    <when value="cached">
+                        <action type="metadata" name="dbkey">
+                            <option type="from_data_table" name="all_fasta" column="1" offset="0">
+                                <filter type="param_value" ref="reference.genome" column="0" />
+                            </option>
+                        </action>
+                    </when>
+                </conditional>
+            </actions>
         </data>
     </outputs>
 
     <tests>
         <test>
-            <param name="ref_genome" value="a.fa" />
+            <conditional name="reference">
+                <param name="source" value="history" />
+                <param name="genome" value="a.fa" />
+            </conditional>
             <repeat name="datasets">
                 <conditional name="mode_choose">
                     <param name="mode" value="single" />
                     <conditional name="input">
                         <param name="iformat" value="bam" />
-                        <param name="ifile" value="a_part2.bam" />
+                        <param name="ifile" value="a_part1.bam" />
                     </conditional>
                 </conditional>
             </repeat>
@@ -355,14 +411,17 @@
                 <has_text text="--selectivity 1" />
             </assert_command>
         </test>
-                <test>
-            <param name="ref_genome" value="a.fa" />
+        <test>
+            <conditional name="reference">
+                <param name="source" value="history" />
+                <param name="genome" value="a.fa" />
+            </conditional>
             <repeat name="datasets">
                 <conditional name="mode_choose">
                     <param name="mode" value="single" />
                     <conditional name="input">
                         <param name="iformat" value="bam" />
-                        <param name="ifile" value="a_part2.bam" />
+                        <param name="ifile" value="a_part1.bam" />
                     </conditional>
                     <section name="aln_options">
                         <param name="maxdist" value="7" />
@@ -392,31 +451,89 @@
 
    **What it does**
 
-The tool aligns the sequenced reads in an arbitrary number of input datasets against a common reference genome and stores the results in a single, possibly multi-sample output file. It supports a variety of different sequenced reads input formats, i.e., SAM, BAM, fastq and gzipped fastq, and both single-end and paired-end data.
+The tool aligns the sequenced reads in an arbitrary number of input datasets
+against a common reference genome and stores the results in a single, possibly
+multi-sample output dataset.
 
-Internally, the tool uses the ultrafast, hashtable-based aligner SNAP (http://snap.cs.berkeley.edu), hence its name. 
+Internally, the tool uses the ultrafast, hashtable-based aligner SNAP (http://snap.cs.berkeley.edu). 
+
+----------
 
 **Notes:**
 
-1) In its standard configuration Galaxy will decompress any .gz files during their upload, so the option to align gzipped fastq input is useful only with customized Galaxy instances or by using linked files as explained in our `recipe for using gzipped fastq files in Galaxy`_.
+*Input formats*
 
-2) To use paired-end fastq data with the tool the read mate information needs to be split over two fastq files in corresponding order.
+- The tool accepts SAM, BAM, fastq and fastq.gz input datasets of sequenced
+  reads and supports both single-end and paired-end data.
+  
+  The recommended approach with MiModD is to store NGS datasets in SAM/BAM
+  format with *Run Metadata* (see below) stored in the file header. You can use
+  the *MiModD Run Annotation* and *MiModD Convert* tools to convert data from
+  fastq format to SAM/BAM format while attaching run metadata to it.
+  
+  While alignments **directly from fastq format** are supported, this **is less
+  reliable** due to less strict specifications of this format. If you find
+  the tool complaining about malformed fastq input, it is likely that you can
+  fix this problem by converting the data to SAM/BAM format first.
 
-   **TIP:** If your paired-end data is arranged differently, you may look into the *fastq splitter* and *fastq de-interlacer* tools for Galaxy from the `Fastq Manipulation category`_ of the Galaxy Tool Shed to see if they can convert your files to the expected format.
+- If you wish to align paired-end data directly from fastq format, the mate
+  sequence data has to be split over two datasets as is mostly standard today.
+  If you have your paired-end data as a single dataset you may look into the
+  *FASTQ splitter* and *FASTQ de-interlacer* tools for Galaxy, which are
+  available from the `Fastq Manipulation category`_ of the Galaxy Tool Shed and
+  may be able to convert your files to the expected format.
 
-3) The tool supports the alignment of reads from the same sequencing run, but distributed across several input files. 
-   
-   Generally, it expects the reads from each input dataset to belong to one read-group and will abort with an error message if any input dataset declares more than one read group or sample names in its header. Different datasets, however, are allowed to contain reads from the same read-group (as indicated by matching read-group IDs and sample names in their headers), in which case the reads will be combined into one group in the output.
+*Run Metadata*
 
-4) Read-group information is required for every input dataset!
- 
-   We generally recommend to store NGS datasets in SAM/BAM format with run metadata stored in the file header. You can use the *NGS Run Annotation* and *Convert* tools to convert data in fastq format to SAM/BAM with added run information.
+- **Every input file requires accompanying Run Metadata!** Most importantly,
+  this includes a *read-group ID* (an identifier of the sequencing run that
+  produced the data) and a *sample name* (identifying the
+  biological sample sequenced in the run).
 
-   While it is not our recommended approach, you can, if you prefer it, align reads from fastq files or SAM/BAM files without header read-group information. To do so, you **must** specify a SAM file that provides the missing information in its header along with the input dataset. You can generate a SAM header file with the *NGS Run Annotation* tool.
+- If an input dataset does not provide this information directly (fastq
+  datasets never do; SAM/BAM datasets may provide it in their header), you need
+  to specify a separate SAM/BAM dataset with an appropriate header as the
+  source of the Run Metadata.
+  
+  You can use the *MiModD Run Annotation* tool to generate such a file.
+  
+- If a SAM/BAM input dataset already provides Run Metadata, you can still
+  specify a different Run Metadata source, which will then overwrite the
+  information already present in the input. This is useful, for example, to
+  resolve read-group ID conflicts between multiple input datasets.
 
-   Optionally, a SAM header file can also be used to replace existing read-group information in a headered SAM/BAM input file. This can be used to resolve read-group ID conflicts between multiple input files at tool runtime.
+- Every input dataset can only contain reads from a single read-group. If you
+  would like, for example, to realign the reads in a multi-sample SAM/BAM
+  dataset. You should first use the *MiModD Sort* tool to sort the data by read
+  names (this step is only necessary for paired-end data), then split the reads
+  into new per-read-group datasets using the *MiModD Convert* tool.
 
-5) The options available under *further parameter settings* can have **big** effects on the alignment quality. You are strongly encouraged to consult the `tool documentation`_ for detailed explanations of the available options.
+- Several input datasets can declare identical read-group IDs and/or sample
+  names.
+  
+  Identical read-group IDs mean that the datasets were produced in the
+  same sequencing run, as is the case, for example, with partial fastq
+  sequencing data. In the output dataset, the corresponding reads will be
+  merged and it will not be possible to trace back their source.
+  
+  Identical sample names (but different read-group IDs) indicate that the same
+  sample has been sequenced multiple times. In the output dataset, the
+  corresponding reads will be tagged appropriately and tools like the
+  *MiModD Variant Calling* tool will let you decide whether you want to treat
+  them together or separately.
+
+----------
+  
+**Tool Options**
+
+The section *Alignment parameters* lets you configure global settings for the
+alignment job that will be applied to all input datasets. For each input
+dataset, however, you can overwrite some or all of these settings by specifying
+new values in the section *Alignment options for this sample*. Some of the
+alignment parameters may have **big** effects on the alignment quality, but
+these effects are very dependent on the type of input sequences. You are
+strongly encouraged to consult the in-depth `tool documentation`_ for detailed
+explanations of the available options.
 
 .. _Fastq Manipulation category: https://toolshed.g2.bx.psu.edu/repository/browse_repositories_in_category?id=310ff67d4caf6531
 .. _recipe for using gzipped fastq files in Galaxy: http://mimodd.readthedocs.org/en/latest/recipes.html#use-gzipped-fastq-files-in-galaxy

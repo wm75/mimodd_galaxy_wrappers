@@ -1,13 +1,13 @@
 ##fileformat=VCFv4.2
 ##FILTER=<ID=PASS,Description="All filters passed">
 ##reference=/home/wolma/galaxy_2017/database/files/000/dataset_35.dat
-##contig=<ID=chrI,length=25050>
-##contig=<ID=chrII,length=25050>
-##contig=<ID=chrIII,length=25050>
-##contig=<ID=chrIV,length=25050>
-##contig=<ID=chrV,length=25050>
-##contig=<ID=chrX,length=25050>
-##contig=<ID=MtDNA,length=13794>
+##contig=<ID=chrI,length=15072423>
+##contig=<ID=chrII,length=15279345>
+##contig=<ID=chrIII,length=13783700>
+##contig=<ID=chrIV,length=17493793>
+##contig=<ID=chrM,length=13794>
+##contig=<ID=chrV,length=20924149>
+##contig=<ID=chrX,length=17718866>
 ##ALT=<ID=X,Description="Represents allele(s) other than observed.">
 ##INFO=<ID=INDEL,Number=0,Type=Flag,Description="Indicates that the variant is an INDEL.">
 ##INFO=<ID=IDV,Number=1,Type=Integer,Description="Maximum number of reads supporting an indel">
@@ -184,9 +184,3 @@ chrX	15480	.	T	C	13.4669	.	DP=1;SGB=-0.157211;MQ0F=0;AC=2;AN=2;DP4=0,0,1,0;MQ=60
 chrX	15495	.	G	C	13.4669	.	DP=1;SGB=-0.157211;MQ0F=0;AC=2;AN=2;DP4=0,0,1,0;MQ=60	GT:PL:DP:DPR:GQ	./.:0,0,0:0:0,0:0	1/1:38,3,0:1:0,1:4
 chrX	24890	.	C	G	13.4669	.	DP=1;SGB=-0.157211;MQ0F=0;AC=2;AN=2;DP4=0,0,1,0;MQ=60	GT:PL:DP:DPR:GQ	./.:0,0,0:0:0,0:0	1/1:38,3,0:1:0,1:4
 chrX	24935	.	A	C	11.5799	.	DP=1;SGB=-0.157211;MQ0F=0;AC=2;AN=2;DP4=0,0,1,0;MQ=60	GT:PL:DP:DPR:GQ	./.:0,0,0:0:0,0:0	1/1:36,3,0:1:0,1:4
-MtDNA	954	.	G	T	4.79534	.	DP=2;SGB=-0.516033;RPB=1;MQB=1;BQB=1;MQ0F=0;ICB=0.5;HOB=0.5;AC=2;AN=4;DP4=0,1,0,1;MQ=60	GT:PL:DP:DPR:GQ	0/1:36,3,0:1:0,1:3	0/1:0,3,33:1:1,0:3
-MtDNA	5979	.	C	A	7.18923	.	DP=1;SGB=-0.157211;MQ0F=0;AC=2;AN=2;DP4=0,0,0,1;MQ=60	GT:PL:DP:DPR:GQ	./.:0,0,0:0:0,0:0	1/1:31,3,0:1:0,1:4
-MtDNA	8429	.	A	G	38.5774	.	DP=2;VDB=0.36;SGB=-0.759771;MQSB=1;MQ0F=0;AC=4;AN=4;DP4=0,0,1,1;MQ=60	GT:PL:DP:DPR:GQ	1/1:26,3,0:1:0,1:9	1/1:37,3,0:1:0,1:9
-MtDNA	12134	.	A	G	6.22224	.	DP=2;SGB=-0.516033;RPB=1;MQB=1;BQB=1;MQ0F=0;ICB=0.5;HOB=0.5;AC=2;AN=4;DP4=0,1,0,1;MQ=60	GT:PL:DP:DPR:GQ	0/1:0,3,41:1:1,0:3	0/1:38,3,0:1:0,1:3
-MtDNA	12637	.	G	T	8.72328	.	DP=2;SGB=-0.516033;RPB=1;MQB=1;BQB=1;MQ0F=0;ICB=0.5;HOB=0.5;AC=2;AN=4;DP4=1,0,1,0;MQ=60	GT:PL:DP:DPR:GQ	0/1:41,3,0:1:0,1:3	0/1:0,3,25:1:1,0:3
-MtDNA	12998	.	C	T	14.4264	.	DP=1;SGB=-0.157211;MQ0F=0;AC=2;AN=2;DP4=0,0,1,0;MQ=60	GT:PL:DP:DPR:GQ	1/1:39,3,0:1:0,1:4	./.:0,0,0:0:0,0:0

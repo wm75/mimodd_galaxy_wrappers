@@ -40,6 +40,7 @@
     <inputs>
         <param name="rg_id" type="text" size="80"
         label="read-group ID (required)">
+            <validator type="empty_field" />
             <sanitizer invalid_char="">
                 <valid initial="string.printable">
                     <remove value="&quot;" />
@@ -51,6 +52,7 @@
         </param>
         <param name="rg_sm" type="text" size="80"
         label="sample name (required)">
+            <validator type="empty_field" />
             <sanitizer invalid_char="">
                 <valid initial="string.printable">
                     <remove value="&quot;" />
@@ -71,7 +73,9 @@
             </sanitizer>
         </param>
         <param name="rg_date" type="text"
-        label="date (YYYY-MM-DD) the run was produced" />
+        label="date (YYYY-MM-DD) the run was produced">
+            <validator type="expression" message="YYYY-MM-DD date format required">not value or (len(value.split('-')) == 3 and all(part.isdigit() and len(part)==expect_len for part, expect_len in zip(value.split('-'), [4,2,2])))</validator>
+        </param>
         <param name="rg_cn" type="text" size="80"
         label="name of sequencing center">
             <sanitizer invalid_char="">
@@ -143,9 +147,12 @@
 
    **What it does**
 
-This tool takes the user-provided information about a next-generation sequencing run and constructs a valid header in the SAM file format from it.
+This tool takes user-provided information about a next-generation sequencing
+run and constructs a valid SAM format header from it.
 
-The result file can be used by the tools *Convert* and *Reheader* or in the *SNAP Read Alignment* step to add run metadata to sequenced reads files (or to overwrite pre-existing information).
+The resulting dataset can be used by the *MiModD Convert*, *MiModD Reheader*
+and the *MiModD Read Alignment* tool to add run metadata to sequenced reads
+input datasets (or to overwrite pre-existing information).
 
 **Note:**
 

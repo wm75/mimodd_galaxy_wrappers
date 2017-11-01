@@ -10,11 +10,11 @@ version="@MIMODD_WRAPPER_VERSION@">
     <expand macro="stdio" />
     <expand macro="version_command" />
     <command><![CDATA[
+    #if $str($formatting.oformat) == 'html':
+      mkdir '$ofile.files_path' &&
+    #end if
   	mimodd varreport
-  	  '$inputfile' --ofile '$ofile' --oformat ${formatting.oformat}
-  	  #if $str($grouping):
-	    --grouping $grouping
-	  #end if
+  	  '$inputfile' --oformat ${formatting.oformat}
 	  #if $str($formatting.oformat) == 'html':
 	    #if $str($formatting.species):
 	      --species '${formatting.species}'
@@ -22,17 +22,18 @@ version="@MIMODD_WRAPPER_VERSION@">
 	    #if $formatting.link_formatter:
 	      --link '${formatting.link_formatter}'
 	    #end if
+	    --ofile '${ofile.files_path}/variant_report.html'
+	    && echo
+	    '<html><body><p>MiModD has generated the variant report you requested, but for technical reasons, we have to take you through this little detour to display the report in Galaxy.</p><p>Proceed to <a href="variant_report.html">the variant report</a>.</p></body></html>'
+	    > '$ofile'
+	  #else
+        --ofile '$ofile'
 	  #end if
     ]]></command>
 
     <inputs>
         <param name="inputfile" type="data" format="vcf"
         label="The VCF input with the variants to be reported" />
-        <param name="grouping" type="select" label="Group variants by">
-            <option value="">order in the input file</option>
-            <option value="by_sample">sample</option>
-            <option value="by_genes">most affected genes</option>
-        </param>        
         <conditional name="formatting">
             <param name="oformat" type="select"
             label="Format to use for the report">
@@ -68,9 +69,11 @@ version="@MIMODD_WRAPPER_VERSION@">
                 <param name="species" value="C. elegans" />
             </conditional>
             <output name="ofile" ftype="html">
-                <assert_contents>
-                    <has_line_matching expression=".+tools/genome/gbrowse/c_elegans_PRJNA13758.+" />
-                </assert_contents>
+                <extra_files type="file" name="variant_report.html" ftype="html">
+                    <assert_contents>
+                        <has_line_matching expression=".+tools/genome/gbrowse/c_elegans_PRJNA13758.+" />
+                    </assert_contents>
+                </extra_files>
             </output>
         </test>
         <test>
@@ -80,9 +83,9 @@ version="@MIMODD_WRAPPER_VERSION@">
             </conditional>
             <output name="ofile" ftype="tabular">
                 <assert_contents>
-                    <has_n_columns n="8" />
-                    <has_line_matching expression="N2&#009;chrI.+" />
-                    <has_line_matching expression="ot266&#009;chrI.+" />
+                    <has_n_columns n="11" />
+                    <has_line_matching expression="Chromosome&#009;Position&#009;Affected Gene&#009;Transcript&#009;Effects&#009;genotype N2&#009;.+genotype ot266&#009;.+" />
+                    <has_line_matching expression="chrI&#009;.+" />
                 </assert_contents>
             </output>
         </test>

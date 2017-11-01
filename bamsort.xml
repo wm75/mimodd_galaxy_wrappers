@@ -1,5 +1,5 @@
 <tool id="mimodd_sort" name="MiModD Sort" version="@MIMODD_WRAPPER_VERSION@">
-    <description>takes a SAM/BAM file and generates a coordinate/name-sorted copy</description>
+    <description>takes a SAM/BAM dataset and generates a coordinate/name-sorted copy</description>
     <macros>
         <import>macros.xml</import>
     </macros>
@@ -19,11 +19,11 @@
             </param>
             <when value="bam">
                 <param name="ifile" type="data" format="bam" 
-                label="BAM input file to sort" />
+                label="BAM input dataset to sort" />
             </when>
             <when value="sam">
                 <param name="ifile" type="data" format="sam" 
-                label="SAM input file to sort" />
+                label="SAM input dataset to sort" />
             </when>
         </conditional>
         <param name="oformat" type="select" label="Output format for the sorted data">
@@ -75,11 +75,20 @@
 
    **What it does**
 
-The tool sorts a BAM file of aligned reads, typically by the reference genome coordinates that the reads have been mapped to.
+The tool sorts an aligned reads input dataset, typically by the reference
+genome coordinates that the reads have been mapped to.
 
-Coordinate-sorted input files are expected by most downstream MiModD tools, but note that the *SNAP Read Alignment* produces coordinate-sorted output by default and it is only necessary to sort files that come from other sources or from *SNAP Read Alignment* jobs with a custom sort order.
+Coordinate-sorted input files are expected by most downstream MiModD tools, but
+note that the *MiModD Read Alignment* produces coordinate-sorted output by
+default and it is only necessary to sort files that come from other sources or
+from *MiModD Read Alignment* jobs with a custom sort order.
 
-The option *Sort by read names instead of coordinates* is useful if you want to re-align coordinate-sorted paired-end data. In *paired-end mode*, the *SNAP Read Alignment* tool expects the reads in the input file to be arranged in read pairs, i.e., the forward read information of a pair must be followed immediately by its reverse mate information, which is typically not the case in coordinate-sorted files. Resorting such files by read names fixes this problem.
+The option *Sort by read names instead of coordinates* is useful if you want to
+re-align coordinate-sorted paired-end data. In *paired-end mode*, the
+*MiModD Read Alignment* tool expects the reads in the input file to be arranged
+in read pairs, *i.e.*, the forward read information of a pair must be followed
+immediately by its reverse mate information, which is typically not the case in
+coordinate-sorted data. Resorting such data by read names fixes this problem.
 
 @HELP_FOOTER@
     ]]></help>

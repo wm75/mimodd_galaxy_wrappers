@@ -27,10 +27,14 @@
                     <repeat name="rg" title="new read-group info" default="1" min="1">
                         <param name="source_id" type="text"
                         label="read-group ID (will create the read-group if it does not exist)"
-                        help="required field" />
+                        help="required field">
+                            <validator type="empty_field" />
+                        </param>
                         <param name="rg_id" type="hidden" value="" />
                         <param name="rg_sm" type="text" label="sample name"
-                        help="required field" />
+                        help="required field">
+                            <validator type="empty_field" />
+                        </param>
                         <param name="rg_ds" type="text" label="description" />
                         <param name="rg_date" type="text"
                         label="date (YY-MM-DD format) the run was produced" />
