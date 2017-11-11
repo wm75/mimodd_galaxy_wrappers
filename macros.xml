@@ -1,7 +1,7 @@
 <macros>
-    <token name="@MIMODD_VERSION_REQUIRED@">0.1.8.0</token>
-    <token name="@MIMODD_REAL_VERSION@">0.1.8.0</token>
-    <token name="@MIMODD_WRAPPER_VERSION@">0.1.8.0_0</token>
+    <token name="@MIMODD_VERSION_REQUIRED@">0.1.8</token>
+    <token name="@MIMODD_REAL_VERSION@">0.1.8</token>
+    <token name="@MIMODD_WRAPPER_VERSION@">0.1.8_0</token>
     <token name="@HELP_FOOTER@"><![CDATA[
 ----
 
@@ -9,7 +9,7 @@
 
    For **additional help** see these resources: 
 
-- The complete `MiModD User Guide <http://mimodd.readthedocs.io/en/0.1.8.0/usage_toc.html>`__
+- The complete `MiModD User Guide <http://mimodd.readthedocs.io/en/v0.1.8/usage_toc.html>`__
 
 - The `MiModD help forum <https://groups.google.com/forum/#!forum/mimodd>`__ reachable also via `email <mailto:mimodd@googlegroups.com>`__
 
