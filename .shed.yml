@@ -15,6 +15,7 @@ repositories:
     include:
       - snap_caller.xml
       - macros.xml
+      - tool_data_table_conf.xml.sample
       - test-data
   mimodd_snpeff:
     description: SnpEff-dependent functionality of MiModD
@@ -52,6 +53,7 @@ repositories:
       - varreport.xml
       - cloudmap.xml
       - macros.xml
+      - tool_data_table_conf.xml.sample
       - test-data
 suite:
   name: "suite_mimodd"
