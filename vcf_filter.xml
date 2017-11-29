@@ -57,10 +57,14 @@
         <param name="inputfile" type="data" format="vcf" label="VCF input file" />
         <repeat name="datasets" title="Sample-specific Filter" default="0" min="0">
             <param name="sample" type="text" label="sample"
-            help="name of a sample as it appears in the VCF input file and that indicates the sample that this filter should be applied to." />
+            help="name of a sample as it appears in the VCF input file and that indicates the sample that this filter should be applied to.">
+                <expand macro="lex_sam_header" message="Non-ASCII characters are not valid in sample names." />
+            </param>
 	        <param name="GT" type="text" 
 	        label="genotype pattern(s) for the inclusion of variants"
-	        help="keep only variants for which the genotype of the sample matches the specified pattern; format: x/x where x = 0 is wildtype and x = 1 is mutant. Multiple genotypes can be specified as a comma-separated list." />
+	        help="keep only variants for which the genotype of the sample matches the specified pattern; format: x/x where x = 0 is wildtype and x = 1 is mutant. Multiple genotypes can be specified as a comma-separated list.">
+	            <validator type="expression" message="Malformed genotype pattern">not value or all(c.isdigit() or c in './|' for token in value.split(',') for c in token.strip(' '))</validator>
+	        </param>
 	        <param name="DP" type="integer" value="0" 
 	        label="depth of coverage for the sample at the variant site"
 	        help="keep only variants with at least this sample-specific coverage at the variant site" />
@@ -69,13 +73,21 @@
         	help="keep only variants for which the genotype prediction for the sample has at least this quality" />
 	        <param name="AF" type="text"
 	        label="allelic fraction filter"
-	        help="expected format: [allele number]:[minimal fraction]:[maximal fraction]; keep only variants for which the fraction of sample-specific reads supporting a given allele number is between minimal and maximal fraction; if allele number is omitted, the filter operates on the most frequent non-reference allele instead" />
+	        help="expected format: [allele number]:[minimal fraction]:[maximal fraction]; keep only variants for which the fraction of sample-specific reads supporting a given allele number is between minimal and maximal fraction; if allele number is omitted, the filter operates on the most frequent non-reference allele instead">
+	            <validator type="expression" message="Malformed allelic fraction filter">not value or all(c.isdigit() or c in '.:' for c in value)</validator>
+	        </param>
         </repeat>
         <repeat name="regions" title="Region Filter" default="0" min="0"
         help="Filter variant sites by their position in the genome. If multiple Region Filters are specified, all variants that fall in ONE of the regions are reported.">
-            <param name="chrom" type="text" label="Chromosome" />
-            <param name="start" type="text" label="Region Start" />
-            <param name="stop" type="text" label="Region End" />
+            <param name="chrom" type="text" label="Chromosome">
+                <expand macro="lex_sam_header" message="Non-ASCII characters are not valid in chromosome names." />
+            </param>
+            <param name="start" type="text" label="Region Start">
+                <validator type="expression" message="an integer number is required">not value or value.isdigit()</validator>
+            </param>
+            <param name="stop" type="text" label="Region End">
+                <validator type="expression" message="an integer number is required">not value or value.isdigit()</validator>
+            </param>
         </repeat>
         <param name="vartype" type="select" 
         label="Select the types of variants to include in the output">
@@ -84,7 +96,9 @@
             <option value="--indels-only">only indels</option>
         </param>
         <param name="vfilter" type="text" label="sample"
-        help="Filter output by sample name; only the sample-specific columns with their sample name matching any of the comma separated filters will be retained in the output." />
+        help="Filter output by sample name; only the sample-specific columns with their sample name matching any of the comma separated filters will be retained in the output.">
+            <expand macro="lex_sam_header" message="Non-ASCII characters are not valid in sample names." />
+        </param>
     </inputs>
   
     <outputs>

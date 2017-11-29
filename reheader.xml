@@ -29,24 +29,41 @@
                         label="read-group ID (will create the read-group if it does not exist)"
                         help="required field">
                             <validator type="empty_field" />
+                            <expand macro="lex_sam_header" />
                         </param>
                         <param name="rg_id" type="hidden" value="" />
                         <param name="rg_sm" type="text" label="sample name"
                         help="required field">
                             <validator type="empty_field" />
+                            <expand macro="lex_sam_header" />
                         </param>
-                        <param name="rg_ds" type="text" label="description" />
+                        <param name="rg_ds" type="text" label="description">
+                            <expand macro="lex_sam_header" />
+                        </param>
                         <param name="rg_date" type="text"
-                        label="date (YY-MM-DD format) the run was produced" />
+                        label="date (YY-MM-DD format) the run was produced">
+                            <expand macro="YYYY-MM-DD_format_validator" />
+                        </param>
                         <param name="rg_cn" type="text"
-                        label="name of sequencing center" />
-                        <param name="rg_lb" type="text" label="read-group library" />
+                        label="name of sequencing center">
+                            <expand macro="lex_sam_header" />
+                        </param>
+                        <param name="rg_lb" type="text" label="read-group library">
+                            <expand macro="lex_sam_header" />
+                        </param>
                         <param name="rg_pl" type="text"
-                        label="platform/technology used to produce the reads" />
+                        label="platform/technology used to produce the reads">
+                            <expand macro="known_sequencing_platform options" />
+                            <expand macro="lex_sam_header" />
+                        </param>
                         <param name="rg_pi" type="text"
-                        label="predicted median insert size" />
+                        label="predicted median insert size">
+                            <validator type="expression" message="an integer number is required">not value or value.isdigit()</validator>
+                        </param>
                         <param name="rg_pu" type="text" 
-                        label="platform unit; unique identifier" />
+                        label="platform unit; unique identifier">
+                            <expand macro="lex_sam_header" />
+                        </param>
                     </repeat>    
                 </when>
             </conditional>
@@ -180,12 +197,16 @@
             </param>
             <when value="update">
                 <repeat name="coinfo" title="comment line" default="0" min="0">
-                    <param name="line" type="text" size="80" />
+                    <param name="line" type="text" size="80">
+                        <expand macro="lex_sam_header" />
+                    </param>
                 </repeat>
             </when>
             <when value="replace">
                 <repeat name="coinfo" title="comment line" default="0" min="0">
-                    <param name="line" type="text" size="80" />
+                    <param name="line" type="text" size="80">
+                        <expand macro="lex_sam_header" />
+                    </param>
                 </repeat>
             </when>
             <when value="ignore">
@@ -194,14 +215,23 @@
         <repeat name="rg_renaming" title="rename read-group" default="0" min="0"
         help="Warning: changing read-group IDs may increase job runtime substantially.">
             <param name="from" type="text" size="30" label="old name"
-            help="as it appears in the current input file header"/>
-            <param name="to" type="text" size="30" label="new name" />
+            help="as it appears in the current input file header">
+                <expand macro="lex_sam_header" />
+            </param>
+            <param name="to" type="text" size="30" label="new name">
+                <expand macro="lex_sam_header" />
+            </param>
         </repeat>
         <repeat name="sq_renaming" title="rename sequence" default="0" min="0"
         help="Warning: changing sequence names may increase job runtime substantially.">
             <param name="from" type="text" size="30" label="old name"
-            help="as it appears in the current input file header"/>
-            <param name="to" type="text" size="30" label="new name" />
+            help="as it appears in the current input file header">
+                <expand macro="lex_sam_header" />
+            </param>
+            <param name="to" type="text" size="30" label="new name">
+                <validator type="expression" message="Sequence names may not contain non-ASCII, whitespace, non-printable characters, nor any of: &lt;&gt;[]*;=,">all((32 &lt; ord(c) &lt; 127 and c not in '&lt;&gt;[]*;=,') for c in value)</validator>
+                <expand macro="lex_sam_header" />
+            </param>
         </repeat>
     </inputs>
   

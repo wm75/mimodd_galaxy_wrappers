@@ -18,8 +18,8 @@
                     <param name="show_kde" type="boolean" truevalue="" falsevalue="--no-kde" checked="true"
                     label="show kde line in histogram plots"
                     help="The tool can calculate a kernel density estimate for the linkage data based on a bin size of 10 kilobases and display it as a solid line in the histogram plots." />
-                    <param name="hylim" type="text" 
-                    label="upper limit for the histogram y-axis (leave blank for automatic scaling)" />
+                    <param name="hylim" type="float" value="0.0"
+                    label="upper limit for the histogram y-axis (leave at 0.0 for automatic scaling)" />
                     <param name="xlim" type="select" label="x-axis scaling">
                         <option value="">preserve relative contig sizes</option>
                         <option value="--fit-width">scale each contig to fit the plot width</option>
@@ -44,8 +44,8 @@
                     <param name="show_kde" type="boolean" truevalue="" falsevalue="--no-kde" checked="true"
                     label="show kde line in histogram plots"
                     help="The tool can calculate a kernel density estimate for the linkage data based on a bin size of 10 kilobases and display it as a solid line in the histogram plots." />
-                    <param name="hylim" type="text" 
-                    label="upper limit for the histogram y-axis (leave blank for automatic scaling)" />
+                    <param name="hylim" type="float" value="0.0" 
+                    label="upper limit for the histogram y-axis (leave at 0.0 for automatic scaling)" />
                     <param name="xlim" type="select" label="x-axis scaling">
                         <option value="">preserve relative contig sizes</option>
                         <option value="--fit-width">scale each contig to fit the plot width</option>
@@ -54,13 +54,13 @@
                 </when>
                 <when value="--no-hist -p">
                     <expand macro="hist_default" />
-                    <param name="sylim" type="text" 
+                    <param name="sylim" type="float" value="1.0" 
                     label="upper limit for the scatter plot y-axis (default: 1)" />
                     <param name="xlim" type="select" label="x-axis scaling">
                         <option value="">preserve relative contig sizes</option>
                         <option value="--fit-width">scale each contig to fit the plot width</option>
                     </param>
-                    <param name="span" type="text" 
+                    <param name="span" type="float" value="0.1" 
                     label="span value to be used in calculating the Loess regression line through the scatter data (default=0.1, specify 0 to prevent calculation)" 
                     help="smaller values give a more responsive curve that often picks up local evidence for tight linkage better, but too small values lead to plotting failures (in that case just rerun the tool with a larger value)." />
                     <expand macro="scatter_colors" />
@@ -84,8 +84,8 @@
                     <param name="show_kde" type="boolean" truevalue="" falsevalue="--no-kde" checked="true"
                     label="show kde line in histogram plots"
                     help="The tool can calculate a kernel density estimate for the linkage data based on a bin size of 10 kilobases and display it as a solid line in the histogram plots." />
-                    <param name="hylim" type="text" 
-                    label="upper limit for the histogram y-axis (leave blank for automatic scaling)" />
+                    <param name="hylim" type="float" value="0.0" 
+                    label="upper limit for the histogram y-axis (leave at 0.0 for automatic scaling)" />
                     <param name="xlim" type="select" label="x-axis scaling">
                         <option value="">preserve relative contig sizes</option>
                         <option value="--fit-width">scale each contig to fit the plot width</option>
@@ -107,7 +107,10 @@
         <macro name="bins">
             <repeat name="bin_sizes" default="0" min="0" title="bin sizes to analyze variants in (defaults to: 1Mb and 500Kb)" 
             help="Values can be entered in bases (e.g., 1000000), kilobases (e.g., 500Kb) or megabases (e.g., 1Mb), but must be integral, i.e. no decimal numbers are allowed.">
-                <param name="bin_size" type="text" />
+                <param name="bin_size" type="text">
+                     <validator type="empty_field" />
+                     <validator type="expression" message="Malformed bin size">not value or all(c.isdigit() or c in 'KMb' for c in value)</validator>
+                </param>
             </repeat>
         </macro>
         <macro name="scatter_default">
@@ -148,15 +151,15 @@
             <param name="show_kde" type="boolean" truevalue="" falsevalue="--no-kde" checked="true"
             label="show kde line in histogram plots"
             help="The tool can calculate a kernel density estimate for the linkage data based on a bin size of 10 kilobases and display it as a solid line in the histogram plots." />
-            <param name="hylim" type="text" 
-            label="upper limit for the histogram y-axis (leave blank for automatic scaling)" />
-            <param name="sylim" type="text" 
+            <param name="hylim" type="float" value="0.0"
+            label="upper limit for the histogram y-axis (leave at 0.0 for automatic scaling)" />
+            <param name="sylim" type="float" value="1.0"
             label="upper limit for the scatter plot y-axis (default: 1)" />
             <param name="xlim" type="select" label="x-axis scaling">
                 <option value="">preserve relative contig sizes</option>
                 <option value="--fit-width">scale each contig to fit the plot width</option>
             </param>
-            <param name="span" type="text" 
+            <param name="span" type="float" value="0.1"
             label="span value to be used in calculating the Loess regression line through the scatter data (default=0.1, specify 0 to prevent calculation)" 
             help="smaller values give a more responsive curve that often picks up local evidence for tight linkage better, but too small values lead to plotting failures (in that case just rerun the tool with a larger value)." />
             <expand macro="hist_colors" />
@@ -208,7 +211,7 @@
     <expand macro="stdio" />
     <expand macro="version_command" />
     <command><![CDATA[
-    mimodd map ${opt.mode} "${opt.source.ifile}"
+    mimodd map ${opt.mode} '${opt.source.ifile}'
       #if $str($opt.source.sample):
         -m '${opt.source.sample}'
       #end if
@@ -241,7 +244,7 @@
         $str($opt.source.plotopts.plots) '$pfile'
         $opt.source.plotopts.show_kde
         $str($opt.source.plotopts.xlim)
-        #if $str($opt.source.plotopts.hylim):
+        #if $str($opt.source.plotopts.hylim) and $opt.source.plotopts.hylim != 0.0:
           --ylim-hist $str($opt.source.plotopts.hylim)
         #end if
         #if $str($opt.source.plotopts.hcols) and $len($opt.source.plotopts.hcols):
@@ -318,13 +321,18 @@
                         <param name="sample" type="text" 
                         label="mapping sample name" help="the sample to perform mutation mapping for">
                             <validator type="empty_field" />
+                            <expand macro="lex_sam_header" />
                         </param>
                         <param name="related_parent_sample" type="text" 
                         label="name of the related parent sample" 
-                        help="the sample that provides variants present in your original mutant strain or in an ancestor (like the pre-mutagenesis strain); leave blank if not available" />
+                        help="the sample that provides variants present in your original mutant strain or in an ancestor (like the pre-mutagenesis strain); leave blank if not available">
+                            <expand macro="lex_sam_header" />
+                        </param>
                         <param name="unrelated_parent_sample" type="text" 
                         label="name of the unrelated parent sample" 
-                        help="the sample that provides variants present in the unrelated mapping strain (or in an ancestor of it) used in the mapping cross; leave blank if not available" />
+                        help="the sample that provides variants present in the unrelated mapping strain (or in an ancestor of it) used in the mapping cross; leave blank if not available">
+                            <expand macro="lex_sam_header" />
+                        </param>
                         <param name="infer_missing" type="boolean" truevalue="--infer-missing" falsevalue="" checked="false" 
                         label="Infer alleles for missing parent" 
                         help="if variant data for either the related or the unrelated parent strain is not available, the tool can try to infer the alleles present in that parent from the allele spectrum found in the mapping sample. Use with caution on carefully filtered variant lists only!" />
@@ -364,11 +372,13 @@
                         label="mapping sample name"
                         help="the sample to perform mutation mapping for">
                             <validator type="empty_field" />
+                            <expand macro="lex_sam_header" />
                         </param>
                         <param name="contrast_sample" type="text"
                         label="name of the contrast sample"
                         help="the sample that provides contrasting allele composition around the causal variant">
                             <validator type="empty_field" />
+                            <expand macro="lex_sam_header" />
                         </param>
                         <expand macro="vac_unconditional" />
                         <param name="tabfile" type="select"

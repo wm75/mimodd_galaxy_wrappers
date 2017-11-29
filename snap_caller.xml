@@ -165,7 +165,9 @@
                 help="Corresponds to the second value of the SNAP option -s."/>
                 <param name="discard_overlapping_mates" type="text" optional="true"
                 label="discard overlapping read pairs of type"
-                help="Consider overlapping mate pairs of the given orientation type(s) anomalous and discard them; allowed values: RF, FR, FF, RR; multiple types may be specified as a comma-separated list and ALL can be used as a shortcut for discarding all overlapping mate pairs; leave blank to retain all overlapping pairs." />
+                help="Consider overlapping mate pairs of the given orientation type(s) anomalous and discard them; allowed values: RF, FR, FF, RR; multiple types may be specified as a comma-separated list and ALL can be used as a shortcut for discarding all overlapping mate pairs; leave blank to retain all overlapping pairs.">
+                    <validator type="expression" message="only RF, FR, FF, RR or ALL are allowed as input">not value or all(token.strip(' ') in ['RF', 'FR', 'FF', 'RR', 'ALL'] for token in value.split(','))</validator>
+                </param>
                 <param name="maxdist" type="integer" value="8" 
                 label="edit distance (default: 8)" 
                 help="maximum edit distance allowed per read or pair (SNAP option -d); higher values allow more divergent alignments to be found, but increase the rate of misalignments."/>
@@ -329,7 +331,9 @@
 	                    help="Corresponds to the second value of the SNAP option -s."/>
 	                    <param name="discard_overlapping_mates" type="text" optional="true" value=""
 	                    label="discard overlapping read pairs of type" 
-	                    help="Consider overlapping mate pairs of the given orientation type(s) anomalous and discard them; allowed values: RF, FR, FF, RR; multiple types may be specified as a comma-separated list and ALL can be used as a shortcut for discarding all overlapping mate pairs; leave blank to retain all overlapping pairs." />
+	                    help="Consider overlapping mate pairs of the given orientation type(s) anomalous and discard them; allowed values: RF, FR, FF, RR; multiple types may be specified as a comma-separated list and ALL can be used as a shortcut for discarding all overlapping mate pairs; leave blank to retain all overlapping pairs.">
+	                        <validator type="expression" message="only RF, FR, FF, RR or ALL are allowed as input">not value or all(token.strip(' ') in ['RF', 'FR', 'FF', 'RR', 'ALL'] for token in value.split(','))</validator>
+                        </param>
             	        <param name="maxdist" type="integer" optional="true" value="0"
             	        label="edit distance"
             	        help="maximum edit distance allowed per read or pair (SNAP option -d); higher values allow more divergent alignments to be found, but increase the rate of misalignments."/>

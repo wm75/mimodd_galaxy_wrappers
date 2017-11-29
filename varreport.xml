@@ -42,7 +42,9 @@ version="@MIMODD_WRAPPER_VERSION@">
             </param>
             <when value="html">
                 <param name="species" type="text" label="Species"
-                help="If you declare the species your input data comes from, variant reports in html format can have hyperlinks to species-specific databases and genome browsers added. If you have used the MiModD Variant Annotation tool to generate the input dataset, the species information will already be recorded in the dataset, but you can overwrite it if you wish." />
+                help="If you declare the species your input data comes from, variant reports in html format can have hyperlinks to species-specific databases and genome browsers added. If you have used the MiModD Variant Annotation tool to generate the input dataset, the species information will already be recorded in the dataset, but you can overwrite it if you wish.">
+                    <expand macro="lex_sam_header" message="Non-ASCII characters are not allowed in species names." />
+                </param>
                 <param name="link_formatter" type="data" format="txt" optional="true"
                 label="Optional file with species-specific hyperlink formatting instructions"
                 help="If the tool has no built-in support for your species, i.e., it does not know how to generate hyperlinks for it, you can provide a custom recipe here." />
