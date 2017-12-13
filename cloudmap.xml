@@ -133,16 +133,13 @@
             </repeat>
         </macro>
         <macro name="scatter_colors">
-            <repeat name="pcols" default="0" min="0" title="data point colors"
-            help="Series of data points will be plotted based on the colors selected here.">
-                <param name="pcol" type="color" value="black">
+            <repeat name="scols" default="0" min="0" max="1" title="custom scatter plot colors">
+                <param name="pcol" type="color" value="black"
+                label="data points base color">
                     <sanitizer><valid><add value="#" /></valid></sanitizer>
                 </param>
-            </repeat>
-            <repeat name="lcols" default="0" min="0"
-            title="regression line colors"
-            help="Regression lines through series of data will be plotted in the colors selected here.">
-                <param name="lcol" type="color" value="red">
+                <param name="lcol" type="color" value="red"
+                label="regression line color">
                     <sanitizer><valid><add value="#" /></valid></sanitizer>
                 </param>
             </repeat>
@@ -256,16 +253,10 @@
         #if $str($opt.source.plotopts.sylim):
           --ylim-scatter $str($opt.source.plotopts.sylim)
         #end if
-        #if $str($opt.source.plotopts.pcols) and $len($opt.source.plotopts.pcols):
-          --points-colors 
-          #for $color in $opt.source.plotopts.pcols:
-            '${color.pcol}'
-          #end for
-        #end if
-        #if $str($opt.source.plotopts.lcols) and $len($opt.source.plotopts.lcols):
-          --loess-colors
-          #for $color in $opt.source.plotopts.lcols:
-            '${color.lcol}'
+        #if $str($opt.source.plotopts.scols) and $len($opt.source.plotopts.scols):
+          #for $color_scheme in $opt.source.plotopts.scols:
+            --points-colors '${color_scheme.pcol}'
+            --loess-colors '${color_scheme.lcol}'
           #end for
         #end if
         #if $str($opt.source.plotopts.span):
