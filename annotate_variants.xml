@@ -31,7 +31,7 @@ version="@MIMODD_WRAPPER_VERSION@">
 	    #echo ' '.join(str($snpeff_settings.filter).split(','))
 	  #end if
 	  --ofile '$ofile'
-	  --verbose
+	  --verbose --quiet
     ]]></command>
 
     <inputs>
