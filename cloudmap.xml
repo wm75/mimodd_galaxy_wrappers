@@ -116,8 +116,7 @@
         <macro name="scatter_default">
             <param name="sylim" type="hidden" value="" />
             <param name="span" type="hidden" value="" />
-            <param name="pcols" type="hidden" value="" />
-            <param name="lcols" type="hidden" value="" />
+            <param name="scols" type="hidden" value="" />
         </macro>
         <macro name="hist_default">
             <param name="show_kde" type="hidden" value="" />
