@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<repositories description="MiModD - A tool suite to identify mutations from whole-genome sequencing data">
+  <repository name="mimodd_aln" owner="wolma" toolshed="https://toolshed.g2.bx.psu.edu" />
+  <repository name="mimodd_core" owner="wolma" toolshed="https://toolshed.g2.bx.psu.edu" />
+  <repository name="mimodd_snpeff" owner="wolma" toolshed="https://toolshed.g2.bx.psu.edu" />
+</repositories>
