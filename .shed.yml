@@ -18,6 +18,8 @@ repositories:
       - tool_data_table_conf.xml.sample
       - tool-data
       - test-data
+      - COPYING
+      - LICENSE
   mimodd_snpeff:
     description: SnpEff-dependent functionality of MiModD
     long_description: |
@@ -28,9 +30,11 @@ repositories:
       - annotate_variants.xml
       - snpeff_genomes.xml
       - macros.xml
-  mimodd_core:
-    description: The core tools of the MiModD suite of tools.
-    long_description: These tools provide the core mapping-by-sequencing
+      - COPYING
+      - LICENSE
+  mimodd_main:
+    description: The main tools of the MiModD suite of tools.
+    long_description: These tools provide the main mapping-by-sequencing
       functionality of MiModD. Note that sequence reads have to be aligned to
       the corresponding reference genome before they can be analyzed. This can
       be done with any modern aligner of your choice or through the MiModD Read
@@ -57,6 +61,8 @@ repositories:
       - tool_data_table_conf.xml.sample
       - tool-data
       - test-data
+      - COPYING
+      - LICENSE
 suite:
   name: "suite_mimodd"
   description: MiModD - A tool suite to identify mutations from whole-genome sequencing data
